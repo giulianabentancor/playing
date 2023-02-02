@@ -1,18 +1,23 @@
 const { chromium } = require('playwright');
+const LoginPage = require('../pom/modules/Login.page');
 
 describe(`UI login Tests for TMT WEB APP`, () => {
+    jest.setTimeout(30000);
     let browser = null;
     let page = null;
     let context = null;
+    let loginPage = null;
 
     beforeEach( async() => {
         browser = await chromium.launch({headless:false, slowMo:100});
         context = await browser.newContext();
         page = await context.newPage();
-        await page.goto('https://dhi2uhaad6mm8.cloudfront.net/');
+        loginPage = new LoginPage(page);
+        await loginPage.navigate();
     });
 
     afterEach( async() => {
+        await context.close();
         await browser.close();
     });
 
@@ -22,30 +27,15 @@ describe(`UI login Tests for TMT WEB APP`, () => {
     });
 
     test( `Login Ok`, async() => {
-        const emailField = await page.getByLabel('Username');
-        const passField = await page.getByLabel('Password', { exact: true });
-        const submitButton = await page.getByRole('button', { name: 'submitButton' });
-
-        await emailField.fill('fabian.callejas@endava.com');
-        await passField.fill('Password.123');
-        await submitButton.click();
-
+        await loginPage.login('fabian.callejas@endava.com', 'Password.123');
         const projectTittle = await page.getByRole('heading', { name: 'PROJECTS' });
-        const dashboardTittle =  await page.getByRole('heading', { name: 'DASHBOARD' });
         await page.screenshot({path:'screenshoots/fullpage.png', fullPage: true});
         expect(await projectTittle.innerText()).toBe('PROJECTS');
-        expect(await dashboardTittle.innerText()).toBe('DASHBOARD');
+        expect(await page.title()).toBe('Dashboard - Test Management Tool');
     });
 
     test( `Login should fail`, async() => {
-        const emailField = await page.getByLabel('Username');
-        const passField = await page.getByLabel('Password', { exact: true });
-        const submitButton = await page.getByRole('button', { name: 'submitButton' });
-
-        await emailField.fill('fabian.callejas@endava.com');
-        await passField.fill('123');
-        await submitButton.click();
-
+        await loginPage.login('fabian.callejas@endava.com', '123');
         expect(await page.getByText('Incorrect username or password.').isVisible());
     });
 
