@@ -29,7 +29,7 @@ describe(`UI login Tests for TMT WEB APP`, () => {
     test( `Login Ok`, async() => {
         await loginPage.login('fabian.callejas@endava.com', 'Password.123');
         const projectTittle = await page.getByRole('heading', { name: 'PROJECTS' });
-        await page.screenshot({path:'screenshoots/fullpage.png', fullPage: true});
+        await page.screenshot({path:'output/screenshoots/fullpage.png', fullPage: true});
         expect(await projectTittle.innerText()).toBe('PROJECTS');
         expect(await page.title()).toBe('Dashboard - Test Management Tool');
     });
